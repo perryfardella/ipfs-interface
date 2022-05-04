@@ -1,27 +1,29 @@
 import React, { useState } from 'react';
+import { create, CID, IPFSHTTPClient } from "ipfs-http-client";
 import './App.css';
 
+let ipfs: IPFSHTTPClient | undefined;
+  try {
+    ipfs = create({
+      url: "https://ipfs.infura.io:5001/api/v0",
+
+    });
+  } catch (error) {
+    console.error("IPFS error ", error);
+    ipfs = undefined;
+  }
 
 
 
 const App = () => {
-  const [file, setFile] = useState(null);
-  const retrieveFile = (e: any) => {
-    const data = e.target.files[0];
-    const reader = new window.FileReader();
-    reader.readAsArrayBuffer(data);
-    reader.onloadend = () => {
-      console.log("Buffer data: ", Buffer(reader.result));
-    }
   
-    e.preventDefault();  
-  }
   return (
     <div className="App">
-      <form className="form" onSubmit={handleSubmit}>
-        <input type="file" name="data" onChange={retrieveFile} />
-        <button type="submit" className="btn">Upload file</button>
-      </form>
+      <header className="App-header">
+        {!ipfs && (
+          <p>Oh oh, Not connected to IPFS. Checkout out the logs for errors</p>
+        )}
+      </header>
     </div>
   );
 }
