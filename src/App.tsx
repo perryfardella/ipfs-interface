@@ -14,6 +14,8 @@ try {
 
 const App = () => {
   const [images, setImages] = React.useState<{ cid: CID; path: string }[]>([]);
+  const [fileCid, setFileCid] = React.useState<string>('');
+  const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const onUploadSubmitHandler = async (
     event: React.FormEvent<HTMLFormElement>
@@ -47,26 +49,13 @@ const App = () => {
     event: React.FormEvent<HTMLFormElement>
   ) => {
     event.preventDefault();
+
+    setIsLoading(true);
+
     const form = event.target as HTMLFormElement;
-    const files = (form[0] as HTMLInputElement).files;
+    await setFileCid((form[0] as HTMLInputElement).value);
 
-    if (!files || files.length === 0) {
-      return alert('No files selected');
-    }
-
-    const file = files[0];
-
-    // upload files
-    const result = await (ipfs as IPFSHTTPClient).add(file);
-
-    console.log(result.cid.toString());
-    setImages([
-      ...images,
-      {
-        cid: result.cid,
-        path: result.path,
-      },
-    ]);
+    setIsLoading(false);
 
     form.reset();
   };
@@ -83,18 +72,9 @@ const App = () => {
 
               <button type='submit'>Upload File</button>
             </form>
+            
+            {images.length >= 1 && <p>{`Image uploaded to the IPFS, cid: ${images[0].cid}`}</p>}
 
-            <div>
-              {images.map((image, index) => (
-                <img
-                  alt={`Uploaded #${index + 1}`}
-                  src={'https://ipfs.infura.io/ipfs/' + image.path}
-                  style={{ maxWidth: '400px', margin: '15px' }}
-                  key={image.cid.toString() + index}
-                  data-cid={image.cid.toString()}
-                />
-              ))}
-            </div>
           </>
         )}
 
@@ -108,17 +88,9 @@ const App = () => {
               <button type='submit'>Retrieve File</button>
             </form>
 
-            <div>
-              {images.map((image, index) => (
-                <img
-                  alt={`Uploaded #${index + 1}`}
-                  src={'https://ipfs.infura.io/ipfs/' + image.path}
-                  style={{ maxWidth: '400px', margin: '15px' }}
-                  key={image.cid.toString() + index}
-                  data-cid={image.cid.toString()}
-                />
-              ))}
-            </div>
+            {fileCid && !isLoading && <img src={`https://gateway.ipfs.io/ipfs/${fileCid}`} alt='the retrieved file from the IPFS'>
+            </img>}
+  
           </>
         )}
 
